@@ -9,7 +9,7 @@ Ask a question. Read the wiki. Synthesize with citations. Offer to file the answ
 
 ## Pre-condition
 
-Find `SCHEMA.md` (search from cwd upward, or `~/wikis/`). If not found, tell the user to run `wiki-init` first. Read it to get wiki root path and cross-reference convention.
+Find `AGENTS.md` (search from cwd upward, or `~/wikis/`). If not found, tell the user to run `wiki-init` first. Read it to get wiki root path, page types, directories, and cross-reference convention.
 
 ## Process
 
@@ -19,7 +19,7 @@ Scan the full index to identify which pages are likely relevant. Do NOT answer f
 
 ### 2. Read relevant pages
 
-Read the identified pages in full. Follow one level of `[[slug]]` links if they point to pages that seem relevant to the question.
+Read the identified pages in full from their type-specific directories (`wiki/sources/`, `wiki/entities/`, `wiki/concepts/`, `wiki/comparisons/`, `wiki/synthesis/`). Follow one level of `[[slug]]` links if they point to pages that seem relevant to the question.
 
 ### 3. Synthesize the answer
 
@@ -40,11 +40,21 @@ Format for the question type:
 
 After answering, say:
 
-> "Worth saving as `wiki/pages/<suggested-slug>.md`?"
+> "Worth saving as `wiki/synthesis/<suggested-slug>.md`?"
 
 If yes:
-- Write the page with frontmatter: `tags: [query, analysis]`, `sources: [all cited slugs]`
-- Add entry to `wiki/index.md` under the correct category (Analyses or similar)
+- Write the page with frontmatter:
+  ```yaml
+  ---
+  title: <question or analysis title>
+  type: synthesis
+  created: <today>
+  updated: <today>
+  tags: [query, analysis]
+  sources: [<all cited page slugs>]
+  ---
+  ```
+- Add entry to `wiki/index.md` under the Synthesis category
 - Append to `wiki/log.md`:
   ```
   ## [<today>] query | <question summary>

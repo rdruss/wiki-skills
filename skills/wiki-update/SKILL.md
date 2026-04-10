@@ -9,14 +9,14 @@ Revise existing wiki pages. Always show diffs before writing. Always log. Always
 
 ## Pre-condition
 
-Find `SCHEMA.md` (search from cwd upward, or `~/wikis/`). If not found, tell the user to run `wiki-init` first. Read it to get wiki root path and conventions.
+Find `AGENTS.md` (search from cwd upward, or `~/wikis/`). If not found, tell the user to run `wiki-init` first. Read it to get wiki root path, page types, directories, and conventions.
 
 ## Process
 
 ### 1. Identify what to update
 
 The user may provide:
-- **Specific page names** — update those pages
+- **Specific page names** — find and update those pages in their type-specific directories
 - **New information** — read `wiki/index.md` to find affected pages, then read those pages
 - **A lint report** — work through its recommendations item by item
 
@@ -35,7 +35,7 @@ Ask for confirmation before writing each page. Do not batch-apply changes withou
 
 ### 3. Check for downstream effects
 
-After identifying the primary pages to update, grep for `[[slug]]` references to those pages across all of `wiki/pages/`. For each page that links to an updated page:
+After identifying the primary pages to update, grep for `[[slug]]` references to those pages across all wiki subdirectories (`wiki/sources/`, `wiki/entities/`, `wiki/concepts/`, `wiki/comparisons/`, `wiki/synthesis/`). For each page that links to an updated page:
 
 - Does the update change anything that page asserts?
 - If yes: flag it explicitly — "[[other-page]] may also need updating based on this change"
@@ -43,15 +43,17 @@ After identifying the primary pages to update, grep for `[[slug]]` references to
 
 ### 4. Contradiction sweep
 
-If the new information contradicts something in the wiki: search all pages for the contradicted claim before updating. It may appear in more than one place. Update all occurrences, not just the most obvious one.
+If the new information contradicts something in the wiki: search all pages across all subdirectories for the contradicted claim before updating. It may appear in more than one place. Update all occurrences, not just the most obvious one.
 
 ### 5. Update `wiki/index.md`
 
 If the one-line summary for any updated page has changed, update it in `index.md`. Update the `updated` date in the page's frontmatter.
 
-### 6. Update `wiki/overview.md`
+### 6. Update `wiki/overview.md` (if it exists)
 
 Re-read `overview.md`. If the updates shift the overall synthesis (new understanding, resolved open question, changed key claim), propose edits to overview.md using the same confirm-before-write flow.
+
+If `overview.md` does not exist, skip this step.
 
 ### 7. Append to `wiki/log.md`
 

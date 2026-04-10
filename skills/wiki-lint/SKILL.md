@@ -9,23 +9,25 @@ Audit the wiki. Produce a categorized report. Offer concrete fixes. Log the oper
 
 ## Pre-condition
 
-Find `SCHEMA.md` (search from cwd upward, or `~/wikis/`). If not found, tell the user to run `wiki-init` first. Read it to get wiki root path and conventions.
+Find `AGENTS.md` (search from cwd upward, or `~/wikis/`). If not found, tell the user to run `wiki-init` first. Read it to get wiki root path, page types, directories, and conventions.
 
 ## Process
 
 ### 1. Build the page inventory
 
-Read `wiki/index.md`, `wiki/overview.md`, and all files in `wiki/pages/`. Build a map of:
-- All existing slugs (filenames without `.md`)
+Read `wiki/index.md` and all files across `wiki/sources/`, `wiki/entities/`, `wiki/concepts/`, `wiki/comparisons/`, and `wiki/synthesis/`. Also read `wiki/overview.md` if it exists. Build a map of:
+- All existing slugs (filenames without `.md`) and their directories
 - All `[[slug]]` references found in any page
 - All `sources` listed in frontmatter
+- All `type` values and whether they match the directory they're filed in
 
 ### 2. Run all checks
 
 **🔴 Errors (must fix)**
 
-- **Broken links** — `[[slug]]` references where no corresponding `wiki/pages/<slug>.md` exists
-- **Missing frontmatter** — pages without required `title`, `tags`, `sources`, or `updated` fields
+- **Broken links** — `[[slug]]` references where no corresponding page exists in any wiki subdirectory
+- **Missing frontmatter** — pages without required `title`, `type`, `created`, `updated`, `tags`, or `sources` fields
+- **Type/directory mismatch** — a page with `type: entity` filed in `wiki/concepts/` instead of `wiki/entities/`, etc.
 
 **🟡 Warnings (should fix)**
 
@@ -41,14 +43,16 @@ Read `wiki/index.md`, `wiki/overview.md`, and all files in `wiki/pages/`. Build 
 
 ### 3. Write the lint report
 
-Write `wiki/pages/lint-<today>.md` (do not ask permission — always write this):
+Write `wiki/synthesis/lint-<today>.md` (do not ask permission — always write this):
 
 ```markdown
 ---
 title: Lint Report <today>
+type: synthesis
+created: <today>
+updated: <today>
 tags: [lint, maintenance]
 sources: []
-updated: <today>
 ---
 
 # Lint Report — <today>
@@ -63,7 +67,11 @@ updated: <today>
   Fix: create the page or remove the reference
 
 ## 🔴 Missing Frontmatter
-- [[page]] is missing: title, updated
+- [[page]] is missing: title, type, created, updated
+
+## 🔴 Type/Directory Mismatch
+- [[page]] has type: entity but is filed in wiki/concepts/
+  Fix: move to wiki/entities/ or correct the type field
 
 ## 🟡 Orphan Pages
 - [[slug]] — no inbound links
@@ -97,7 +105,7 @@ Add the lint report to `wiki/index.md` under a Maintenance category (create it i
 For each fixable category, offer:
 - **Broken links:** "Remove the broken `[[slug]]` references? (I'll show each change before writing)"
 - **Missing cross-references:** "Add the missing links between these page pairs?"
-- **Orphan page tags:** "Add `status: orphan` to frontmatter of orphan pages?"
+- **Type/directory mismatch:** "Move pages to the correct directory or fix the type field?"
 - **Missing frontmatter:** "Add missing frontmatter fields with placeholder values?"
 
 Show the exact diff for each change before writing. Apply only after confirmation.

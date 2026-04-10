@@ -9,7 +9,7 @@ Bootstrap a new LLM-maintained wiki at a user-specified path.
 
 ## Pre-flight
 
-Check whether a `SCHEMA.md` already exists nearby. If yes, ask the user if they want to reinitialize or just continue with the existing wiki.
+Check whether an `AGENTS.md` already exists nearby. If yes, ask the user if they want to reinitialize or just continue with the existing wiki.
 
 ## Process
 
@@ -28,47 +28,96 @@ Ask:
 
 ```
 <wiki-root>/
-├── SCHEMA.md         ← conventions + absolute path (how other skills find the wiki)
+├── AGENTS.md         ← wiki schema + conventions (how other skills find the wiki)
 ├── raw/              ← immutable source documents (you add these, LLM never modifies)
+│   └── assets/       ← downloaded images, PDFs, attachments
 ├── wiki/
 │   ├── index.md      ← content catalog: every page, one-line summary, by category
 │   ├── log.md        ← append-only operation log
-│   ├── overview.md   ← evolving synthesis of everything known
-│   └── pages/        ← all wiki pages, flat, slug-named (NO subdirectories)
-└── assets/           ← downloaded images, PDFs, attachments
+│   ├── sources/      ← source summary pages
+│   ├── entities/     ← tools, frameworks, companies, people
+│   ├── concepts/     ← ideas, patterns, methodologies
+│   ├── comparisons/  ← side-by-side analyses
+│   └── synthesis/    ← higher-level analyses combining multiple sources
 ```
 
-**Critical:** `wiki/pages/` is flat. All pages live here as `<slug>.md`. No subdirectories. Slugs are lowercase, hyphen-separated.
+Pages are filed by type into subdirectories. Filenames are lowercase, hyphen-separated slugs (e.g. `attention-is-all-you-need.md`).
 
-### 3. Write `SCHEMA.md`
+### 3. Write `AGENTS.md`
 
 ```markdown
-# Wiki Schema
+# Wiki Schema — <domain>
 
-## Identity
-- **Path:** <absolute path to wiki-root>
-- **Domain:** <user's domain description>
-- **Source types:** <list>
-- **Created:** <YYYY-MM-DD>
+This is a personal knowledge base about <domain>, maintained by an LLM following the LLM Wiki pattern.
 
-## Page Frontmatter
-Every wiki page must start with:
----
-title: <page title>
-tags: [tag1, tag2]
-sources: [source-slug1]
-updated: YYYY-MM-DD
----
+## Directory structure
 
-## Cross-References
-Use `[[slug]]` where slug = filename without `.md`.
-Example: `[[transformer-architecture]]` → `wiki/pages/transformer-architecture.md`
+- `raw/` — Immutable source documents. Never modify these.
+  - `raw/assets/` — Downloaded images referenced by sources.
+- `wiki/` — LLM-maintained markdown pages. The LLM owns this layer entirely.
+  - `wiki/index.md` — Content catalog of all wiki pages.
+  - `wiki/log.md` — Chronological activity log.
 
-## Log Entry Format
-## [YYYY-MM-DD] <operation> | <title>
-Operations: init, ingest, query, update, lint
+## Conventions
+
+- Use `[[wikilinks]]` for cross-references between wiki pages.
+- Add YAML frontmatter to every wiki page:
+  ```yaml
+  ---
+  title: Page Title
+  type: <source-summary | entity | concept | comparison | synthesis>
+  created: YYYY-MM-DD
+  updated: YYYY-MM-DD
+  tags: []
+  sources: []
+  ---
+  ```
+- Page filenames: lowercase, hyphens for spaces (e.g. `agentic-coding.md`).
+- Keep pages focused — one entity or concept per page.
+- `sources` field references raw/ filenames or URLs of the original source material.
+
+## Page types
+
+- **source-summary** — Summary of a single ingested source. Filed in `wiki/sources/`.
+- **entity** — A tool, framework, company, or person. Filed in `wiki/entities/`.
+- **concept** — An idea, pattern, or methodology. Filed in `wiki/concepts/`.
+- **comparison** — Side-by-side analysis of two or more things. Filed in `wiki/comparisons/`.
+- **synthesis** — Higher-level analysis combining multiple sources. Filed in `wiki/synthesis/`.
+
+## Workflows
+
+### Ingest (one source at a time, interactive)
+
+1. Read the source document in `raw/`.
+2. Discuss key takeaways with the user.
+3. Create a source-summary page in `wiki/sources/`.
+4. Create or update relevant entity and concept pages.
+5. Update `wiki/index.md` with new/changed pages.
+6. Append an entry to `wiki/log.md`.
+
+### Query
+
+1. Read `wiki/index.md` to find relevant pages.
+2. Read those pages and synthesize an answer.
+3. If the answer is substantial, offer to file it as a new wiki page.
+
+### Lint
+
+1. Check for orphan pages (no inbound links).
+2. Check for contradictions between pages.
+3. Identify concepts mentioned but lacking their own page.
+4. Suggest sources to investigate for gaps.
+
+## Log format
+
+Each log entry:
+```
+## [YYYY-MM-DD] <action> | <subject>
+<brief description of what was done>
+```
 
 ## Index Categories
+
 <one per line, matching the user's chosen taxonomy>
 
 ## Conventions
@@ -88,7 +137,7 @@ Operations: init, ingest, query, update, lint
 # Wiki Index — <domain>
 
 <for each category>
-### <Category Name>
+## <Category Name>
 <!-- entries added by wiki-ingest -->
 ```
 
@@ -105,14 +154,18 @@ Recent entries: `grep "^## \[" log.md | tail -10`
 ## [<today>] init | <domain>
 ```
 
-### 6. Write `wiki/overview.md`
+### 6. Optionally write `wiki/overview.md`
+
+Ask the user if they want an evolving synthesis page. If yes:
 
 ```markdown
 ---
 title: Overview
+type: synthesis
+created: <today>
+updated: <today>
 tags: [overview, synthesis]
 sources: []
-updated: <today>
 ---
 
 # <Domain> — Overview
@@ -138,4 +191,4 @@ Tell the user:
 - Wiki initialized at `<path>`
 - Add sources to `raw/` manually, or run `wiki-ingest` directly with a URL or file path
 - Run `wiki-lint` periodically to keep the wiki healthy
-- `SCHEMA.md` is how all other skills locate this wiki — do not move or delete it
+- `AGENTS.md` is how all other skills locate this wiki — do not move or delete it
